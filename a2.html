@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Escola</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: black;
+            font-family: 'Roboto', sans-serif;
+            color: #fff;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: rgba(20, 20, 20, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 800px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2 {
+            margin: 10px 0;
+            font-weight: 700;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .nav {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+
+        .success {
+            color: green;
+            font-size: 0.9em;
+        }
+
+        .table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        .table, .table th, .table td {
+            border: 1px solid #fff;
+        }
+
+        .table th, .table td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        .table th {
+            background-color: #007bff;
+        }
+
+        .profile-icon {
+            cursor: pointer;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.5em;
+            color: white;
+        }
+
+        .background-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: rgba(30, 30, 30, 0.9);
+            color: white;
+            padding: 20px;
+            transition: left 0.3s;
+            z-index: 1000;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .close-sidebar {
+            cursor: pointer;
+            color: red;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-icon" onclick="toggleSidebar()">
+        👤
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="close-sidebar" onclick="toggleSidebar()">✖</div>
+        <h2>Perfil</h2>
+        <p>Usuário: <span id="sidebarUsername"></span></p>
+        <p>Matéria: <span id="sidebarMateria"></span></p>
+        <p>Última entrada: <span id="lastLogin"></span></p>
+    </div>
+
+    <div class="container" id="login">
+        <h1>Bem-vindo!</h1>
+        <h2>Login do Professor</h2>
+        <input type="text" id="username" placeholder="Usuário">
+        <input type="password" id="password" placeholder="Senha">
+        <select id="materia">
+            <option value="" disabled selected>Selecione a Matéria</option>
+            <option value="Humanas">Humanas</option>
+            <option value="Matemática">Matemática</option>
+            <option value="Natureza">Natureza</option>
+            <option value="Linguagens">Linguagens</option>
+        </select>
+        <button onclick="login()">Entrar</button>
+        <div class="register-link">
+            <p>Não tem cadastro? <a href="#" onclick="showRegister()">Clique aqui</a> para se cadastrar!</p>
+        </div>
+        <div id="loginError" class="error"></div>
+    </div>
+
+    <div id="register" class="container" style="display: none;">
+        <h1>Cadastrar Professor</h1>
+        <input type="text" id="newUsername" placeholder="Usuário">
+        <input type="password" id="newPassword" placeholder="Senha">
+        <select id="newMateria">
+            <option value="" disabled selected>Selecione a Matéria</option>
+            <option value="Humanas">Humanas</option>
+            <option value="Matemática">Matemática</option>
+            <option value="Natureza">Natureza</option>
+            <option value="Linguagens">Linguagens</option>
+        </select>
+        <button onclick="registerUser()">Cadastrar</button>
+        <button onclick="hideRegister()">Voltar</button>
+        <div id="registerError" class="error"></div>
+        <div id="registerSuccess" class="success"></div>
+    </div>
+
+    <div id="main" class="container" style="display: none;">
+        <div class="background-image" id="backgroundImage"></div>
+        <h2>Olá, <span id="userGreeting"></span>!</h2>
+        <div class="nav">
+            <button onclick="showSection('cadastroTurma')">Cadastro de Turma</button>
+            <button onclick="showSection('listarTurmas')">Listar Turmas</button>
+            <button onclick="logout()">Sair</button>
+        </div>
+
+        <div id="cadastroTurma" class="content" style="display: none;">
+            <h3>Cadastro de Turma</h3>
+            <input type="text" id="turmaNome" placeholder="Nome da Turma">
+            <button onclick="cadastrarTurma()">Cadastrar</button>
+            <div id="cadastroTurmaError" class="error"></div>
+            <div id="cadastroTurmaSuccess" class="success"></div>
+
+            <h3>Cadastro de Atividade</h3>
+            <input type="text" id="atividadeDescricao" placeholder="Descrição da Atividade">
+            <button onclick="cadastrarAtividade()">Cadastrar Atividade</button>
+            <div id="cadastroAtividadeError" class="error"></div>
+            <div id="cadastroAtividadeSuccess" class="success"></div>
+        </div>
+
+        <div id="listarTurmas" class="content" style="display: none;">
+            <h3>Listar Turmas</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nome da Turma</th>
+                        <th>Atividades</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="turmasList"></tbody>
+            </table>
+            <button onclick="showSection('cadastroTurma')">Cadastrar Nova Turma</button>
+        </div>
+
+        <div id="listarAtividades" class="content" style="display: none;">
+            <h3>Atividades da Turma</h3>
+            <div id="atividadesList"></div>
+            <button onclick="showSection('listarTurmas')">Voltar ao Cadastro de Turma</button>
+        </div>
+    </div>
+
+    <script>
+        let users = [];
+        let turmas = []; 
+        let usuarioLogado = null;
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const materia = document.getElementById('materia').value;
+            const loginError = document.getElementById('loginError');
+
+            loginError.innerText = ''; 
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                usuarioLogado = user;
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('main').style.display = 'block';
+                document.getElementById('userGreeting').innerText = username;
+                document.getElementById('sidebarUsername').innerText = username;
+                document.getElementById('sidebarMateria').innerText = user.materia;
+                document.getElementById('lastLogin').innerText = new Date().toLocaleString();
+                setBackgroundImage(user.materia);
+            } else {
+                loginError.innerText = 'Usuário ou senha incorretos.';
+            }
+        }
+
+        function registerUser() {
+            const newUsername = document.getElementById('newUsername').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const newMateria = document.getElementById('newMateria').value;
+            const registerError = document.getElementById('registerError');
+            const registerSuccess = document.getElementById('registerSuccess');
+
+            registerError.innerText = ''; 
+            registerSuccess.innerText = ''; 
+
+            if (!newUsername || !newPassword || !newMateria) {
+                registerError.innerText = 'Por favor, preencha todos os campos.';
+                return;
+            }
+
+            if (users.find(u => u.username === newUsername)) {
+                registerError.innerText = 'Usuário já cadastrado. Escolha outro.';
+                return;
+            }
+
+            users.push({ username: newUsername, password: newPassword, materia: newMateria });
+            registerSuccess.innerText = 'Cadastro realizado com sucesso! Você já pode fazer login.';
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('newMateria').value = '';
+        }
+
+        function setBackgroundImage(materia) {
+            const backgroundImage = document.getElementById('backgroundImage');
+            switch (materia) {
+                case 'Matemática':
+                    backgroundImage.style.backgroundImage = "url('mat.avif')";
+                    break;
+                case 'Humanas':
+                    backgroundImage.style.backgroundImage = "url('his.webp')";
+                    break;
+                case 'Natureza':
+                    backgroundImage.style.backgroundImage = "url('nat.jpg')";
+                    break;
+                case 'Linguagens':
+                    backgroundImage.style.backgroundImage = "url('por.avif')";
+                    break;
+                default:
+                    backgroundImage.style.backgroundImage = "none";
+                    break;
+            }
+            backgroundImage.style.backgroundSize = "cover";
+            backgroundImage.style.backgroundPosition = "center";
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function logout() {
+            usuarioLogado = null;
+            document.getElementById('main').style.display = 'none';
+            document.getElementById('login').style.display = 'block';
+            document.getElementById('sidebar').classList.remove('active');
+        }
+
+        function showSection(section) {
+            const sections = ['cadastroTurma', 'listarTurmas', 'listarAtividades'];
+            sections.forEach(s => {
+                document.getElementById(s).style.display = s === section ? 'block' : 'none';
+            });
+        }
+
+        function cadastrarTurma() {
+            const turmaNome = document.getElementById('turmaNome').value;
+            const cadastroTurmaError = document.getElementById('cadastroTurmaError');
+            const cadastroTurmaSuccess = document.getElementById('cadastroTurmaSuccess');
+
+            cadastroTurmaError.innerText = ''; 
+            cadastroTurmaSuccess.innerText = ''; 
+
+            if (!turmaNome) {
+                cadastroTurmaError.innerText = 'Por favor, insira um nome para a turma.';
+                return;
+            }
+
+            const novaTurma = {
+                nome: turmaNome,
+                atividades: []
+            };
+
+            turmas.push(novaTurma);
+            cadastroTurmaSuccess.innerText = 'Turma cadastrada com sucesso!';
+            document.getElementById('turmaNome').value = '';
+            listarTurmas();
+        }
+
+        function listarTurmas() {
+            const turmasList = document.getElementById('turmasList');
+            turmasList.innerHTML = ''; 
+            turmas.forEach((turma, index) => {
+                const turmaRow = document.createElement('tr');
+                turmaRow.innerHTML = `
+                    <td>${turma.nome}</td>
+                    <td>${turma.atividades.length}</td>
+                    <td>
+                        <button onclick="mostrarAtividadesDaTurma(${index})">Ver Atividades</button>
+                    </td>
+                `;
+                turmasList.appendChild(turmaRow);
+            });
+        }
+
+        function cadastrarAtividade() {
+            const atividadeDescricao = document.getElementById('atividadeDescricao').value;
+            const cadastroAtividadeError = document.getElementById('cadastroAtividadeError');
+            const cadastroAtividadeSuccess = document.getElementById('cadastroAtividadeSuccess');
+
+            cadastroAtividadeError.innerText = ''; 
+            cadastroAtividadeSuccess.innerText = ''; 
+
+            if (!atividadeDescricao) {
+                cadastroAtividadeError.innerText = 'Por favor, insira uma descrição para a atividade.';
+                return;
+            }
+
+            const turmaIndex = turmas.length - 1; 
+            turmas[turmaIndex].atividades.push(atividadeDescricao); 
+            cadastroAtividadeSuccess.innerText = 'Atividade cadastrada com sucesso!';
+            document.getElementById('atividadeDescricao').value = '';
+            listarAtividadesDaTurma(turmaIndex); 
+        }
+
+        function mostrarAtividadesDaTurma(index) {
+            const atividadesList = document.getElementById('atividadesList');
+            atividadesList.innerHTML = ''; 
+
+            const turmaNome = turmas[index].nome;
+            const turmaHeader = document.createElement('h4');
+            turmaHeader.innerText = `Atividades da Turma: ${turmaNome}`;
+            atividadesList.appendChild(turmaHeader);
+
+            turmas[index].atividades.forEach((atividade, atividadeIndex) => {
+                const atividadeItem = document.createElement('div');
+                atividadeItem.innerText = atividade;
+
+                const deleteButton = document.createElement('button');
+                deleteButton.innerText = 'Excluir';
+                deleteButton.onclick = () => excluirAtividade(index, atividadeIndex);
+                atividadeItem.appendChild(deleteButton);
+
+                const editButton = document.createElement('button');
+                editButton.innerText = 'Editar';
+                editButton.onclick = () => editarAtividade(index, atividadeIndex);
+                atividadeItem.appendChild(editButton);
+
+                atividadesList.appendChild(atividadeItem);
+            });
+
+            showSection('listarAtividades'); 
+        }
+
+        function excluirAtividade(turmaIndex, atividadeIndex) {
+            turmas[turmaIndex].atividades.splice(atividadeIndex, 1); 
+            mostrarAtividadesDaTurma(turmaIndex); 
+        }
+
+        function editarAtividade(turmaIndex, atividadeIndex) {
+            const novaDescricao = prompt('Digite a nova descrição da atividade:', turmas[turmaIndex].atividades[atividadeIndex]);
+            if (novaDescricao) {
+                turmas[turmaIndex].atividades[atividadeIndex] = novaDescricao; 
+                mostrarAtividadesDaTurma(turmaIndex); 
+            }
+        }
+
+        function showRegister() {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('register').style.display = 'block';
+        }
+
+        function hideRegister() {
+            document.getElementById('register').style.display = 'none';
+            document.getElementById('login').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
